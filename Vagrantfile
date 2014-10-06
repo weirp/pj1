@@ -55,6 +55,56 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # View the documentation for the provider you're using for more
   # information on available options.
 
+
+    # To make sure we use EBS for our tmp files
+    config.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        mkdir -m 1777 /mnt/tmp
+        echo 'export TMPDIR=/mnt/tmp' > /etc/profile.d/tmpdir.sh
+      }
+    end
+
+    # To make sure packages are up to date
+    config.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get --yes --force-yes upgrade
+      }
+    end
+
+    # Get Guest additions
+    config.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get install -y inux-headers-generic build-essential dkms
+        apt-get install -y virtualbox-guest-additions-iso
+        sudo mkdir /media/VBoxGuestAdditions
+        sudo mount -o loop,ro /usr/share/virtualbox/VBoxGuestAdditions.iso /media/VBoxGuestAdditions
+        sudo sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run
+        sudo umount /media/VBoxGuestAdditions
+        sudo rmdir /media/VBoxGuestAdditions
+      }
+    end
+
+    # Install dokku-alt
+    config.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        export DEBIAN_FRONTEND=noninteractive
+        echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
+        echo deb https://dokku-alt.github.io/dokku-alt / > /etc/apt/sources.list.d/dokku-alt.list
+
+        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+        apt-key adv --keyserver pgp.mit.edu --recv-keys EAD883AF
+        apt-get update -y
+        apt-get install -y dokku-alt
+      }
+    end
+
   # Enable provisioning with Puppet stand alone.  Puppet manifests
   # are contained in a directory path relative to this Vagrantfile.
   # You will need to create the manifests directory and a manifest in
