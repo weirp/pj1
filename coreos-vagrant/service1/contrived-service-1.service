@@ -1,0 +1,13 @@
+[Unit]
+Description=Contrived Service 1  
+Requires=docker.service  
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker run --rm --name=contrived-service-1 -p 80:9000 lukebond/contrived-service-1  
+ExecStartPost=/usr/bin/etcdctl set /domains/contrived-service-1/%H:%i running  
+ExecStop=/usr/bin/docker stop contrived-service-1  
+ExecStopPost=/usr/bin/etcdctl rm /domains/contrived-service-1/%H:%i
+
+[X-Fleet]
+X-Conflicts=contrived-service-*.service

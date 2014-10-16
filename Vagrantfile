@@ -4,6 +4,11 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
+required_plugins = %w( vagrant-aws vagrant-vbguest vagrant-auto_network )
+required_plugins.each do |plugin|
+  system "vagrant plugin install #{plugin}" unless Vagrant.has_plugin? plugin
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
@@ -81,14 +86,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       s.inline = %{
         export DEBIAN_FRONTEND=noninteractive
         apt-get install -y inux-headers-generic build-essential dkms
-        apt-get install -y virtualbox-guest-additions-iso
+#        apt-get install -y virtualbox-guest-additions-iso
         sudo mkdir /media/VBoxGuestAdditions
-        sudo mount -o loop,ro /usr/share/virtualbox/VBoxGuestAdditions.iso /media/VBoxGuestAdditions
+        sudo mount -o loop,ro /vagrant/VBoxGuestAdditions.iso /media/VBoxGuestAdditions
         sudo sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run
         sudo umount /media/VBoxGuestAdditions
         sudo rmdir /media/VBoxGuestAdditions
       }
     end
+
+# add vagrant to sudoers ????
+# need to copy the guest-additions iso from host, or set up a share
+
+
 
     # Install dokku-alt
     config.vm.provision "shell" do |s|
@@ -104,6 +114,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         apt-get install -y dokku-alt
       }
     end
+
+#  config.vm.provider "docker" do |d|
+#    d.build_dir = "."
+#  end
+
 
   # Enable provisioning with Puppet stand alone.  Puppet manifests
   # are contained in a directory path relative to this Vagrantfile.
@@ -165,4 +180,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # chef-validator, unless you changed the configuration.
   #
   #   chef.validation_client_name = "ORGNAME-validator"
+
+
 end

@@ -1,0 +1,14 @@
+[Unit]
+Description=Postgresql
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStart=/usr/bin/docker run --rm --name=postgresql -p 5432:5432 zaiste/postgresql
+
+/bin/bash -c '/usr/bin/docker start -a postgresql || /usr/bin/docker run --name postgresql -h postgresql.production.home.local  -v /home/core/datos/db/postgresql/:/var/lib/pgsql/9.3/ -p 5432:5432/tcp  --dns 172.17.42.1 --dns 8.8.8.8 --dns 8.8.4.4 shadow/centos-postgresql '
+
+ExecStartPost=/usr/bin/etcdctl set /data/postgres-service/%H:%i running
+ExecStop=/usr/bin/docker stop postgresql
+ExecStopPost=/usr/bin/etcdctl rm /domains/postgres-service/%H:%i
