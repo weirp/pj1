@@ -1,0 +1,11 @@
+[Unit]
+Description=PostgreSQL
+
+[Service]
+TimeoutStartSec=0
+Environment='POSTGRES_NAME=postgres-service'
+ExecStart=/bin/sh /opt/data/pg-service/start.sh
+ExecStartPost=/bin/sh /opt/data/pg-service/start-post.sh
+ExecStop=/bin/sh /opt/data/pg-service/stop.sh
+Restart=always
+RestartSec=10s
