@@ -5,7 +5,18 @@ Requires=docker.service
 
 [Service]
 TimeoutStartSec=0
-ExecStart=/usr/bin/docker run --rm --name=postgresql -p 5432:5432 postgresql
-ExecStartPost=/usr/bin/etcdctl set /data/postgres-service/%H:%i running
-ExecStop=/usr/bin/docker stop postgresql
-ExecStopPost=/usr/bin/etcdctl rm /domains/postgres-service/%H:%i
+User=core
+ExecStartPre=-/usr/bin/docker kill postgres
+ExecStartPre=-/usr/bin/docker rm postgres
+ExecStart=/usr/bin/docker run --rm --name=postgres \
+                          -v /opt/coreupdate/postgres/data:/var/lib/postgresql/data \
+                          --net="host" \
+                          postgres:9.4
+#ExecStartPost=/usr/bin/docker run --net="host" postgres:9.4 psql -h localhost -U postgres --command "CREATE USER coreos WITH SUPERUSER;"
+#ExecStartPost=/usr/bin/docker run --net="host" postgres:9.4 psql -h localhost -U postgres --command "CREATE DATABASE coreupdate OWNER coreos;"
+
+ExecStop=/usr/bin/docker kill postgres
+
+[Install]
+WantedBy=myapp.target
+
