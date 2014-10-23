@@ -1,0 +1,22 @@
+[Unit]
+Description=PjwPostgresql
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+User=core
+ExecStartPre=-/usr/bin/docker kill pjw_postgresql
+ExecStartPre=-/usr/bin/docker rm pjw_postgresql
+ExecStart=/usr/bin/docker run --rm --name=pjw_postgresql \
+                          -v /opt/coreupdate/postgres/data:/var/lib/postgresql/data \
+                          --net="host" \
+                          pjw_postgresql
+#ExecStartPost=/usr/bin/docker run --net="host" pjw_postgresql psql -h localhost -U postgres --command "CREATE USER coreos WITH SUPERUSER;"
+#ExecStartPost=/usr/bin/docker run --net="host" pjw_postgresql psql -h localhost -U postgres --command "CREATE DATABASE coreupdate OWNER coreos;"
+
+ExecStop=/usr/bin/docker kill pjw_postgresql
+
+[Install]
+WantedBy=myapp.target
+
