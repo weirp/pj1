@@ -11,9 +11,10 @@ ExecStartPre=-/usr/bin/docker rm postgres
 ExecStart=/usr/bin/docker run --rm --name=postgres \
                           -v /opt/coreupdate/postgres/data:/var/lib/postgresql/data \
                           --net="host" \
-                          postgres:9.4
-#ExecStartPost=/usr/bin/docker run --net="host" postgres:9.4 psql -h localhost -U postgres --command "CREATE USER coreos WITH SUPERUSER;"
-#ExecStartPost=/usr/bin/docker run --net="host" postgres:9.4 psql -h localhost -U postgres --command "CREATE DATABASE coreupdate OWNER coreos;"
+                          weirp/pg1 
+#ExecStartPost=/usr/bin/docker run --net="host" postgres psql -h localhost -U postgres --command "CREATE USER coreos WITH SUPERUSER;"
+#ExecStartPost=/usr/bin/docker run --net="host" postgres psql -h localhost -U postgres --command "CREATE DATABASE coreupdate OWNER coreos;"
+ExecStartPost=/usr/bin/etcdctl set /db/postgres %H
 
 ExecStop=/usr/bin/docker kill postgres
 
